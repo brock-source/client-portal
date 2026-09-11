@@ -64,22 +64,24 @@ if (fs.existsSync(webRoot)) {
   logger.info("Static middleware enabled");
 }
 
-app.get("*", (req, res) => {
-  logger.info(`Fallback route hit for: ${req.path}`);
-  try {
-    if (fs.existsSync(indexPath)) {
-      logger.info(`Serving index.html from ${indexPath}`);
-      const content = fs.readFileSync(indexPath, "utf-8");
-      res.setHeader("Content-Type", "text/html");
-      res.send(content);
-    } else {
-      logger.warn(`Index.html not found at ${indexPath}`);
-      res.status(404).send("Index.html not found");
+app.use((req, res, next) => {
+  if (req.method === "GET" && !req.path.startsWith("/api")) {
+    logger.info(`SPA fallback for: ${req.path}`);
+    try {
+      if (fs.existsSync(indexPath)) {
+        const content = fs.readFileSync(indexPath, "utf-8");
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        return res.send(content);
+      }
+    } catch (err) {
+      logger.error(`Error reading index.html: ${err}`);
     }
-  } catch (err) {
-    logger.error(`Error serving index.html: ${err}`);
-    res.status(500).send(`Error: ${err}`);
   }
+  next();
+});
+
+app.get("*", (_req, res) => {
+  res.status(404).send("Not found");
 });
 
 app.use(errorHandler);
