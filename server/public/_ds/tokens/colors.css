@@ -1,0 +1,77 @@
+/* ============================================================
+   COLORS — StoneCentury Financial
+   Navy/slate (trust, structure) + stone gray (the tower) + warm
+   gold drawn from the castle photography. Restrained, institutional.
+   ============================================================ */
+:root {
+  /* -- Navy / slate (primary brand) -- */
+  --navy-900: #1b2a3c;
+  --navy-800: #223549;
+  --navy-700: #2e4763; /* wordmark "Stone" */
+  --navy-600: #3a5674;
+  --navy-500: #47668a; /* footer steel */
+  --navy-400: #6a83a1;
+  --navy-200: #b3c1d2;
+  --navy-100: #dde4ec;
+
+  /* -- Stone gray (the tower mark) -- */
+  --stone-900: #3a3f43;
+  --stone-700: #62676c;
+  --stone-500: #878c92; /* wordmark "Century" */
+  --stone-400: #a4a9ae;
+  --stone-300: #c3c7cb;
+  --stone-200: #dcdfe2;
+  --stone-100: #ecedef;
+
+  /* -- Ink & paper (warm neutrals) -- */
+  --ink-900: #171717; /* top bar, primary CTA */
+  --ink-700: #333333;
+  --ink-500: #595653;
+  --paper: #ffffff;
+  --paper-alt: #f1f0ee; /* alternating section band */
+  --paper-warm: #f7f5f2;
+
+  /* -- Gold (photographic warmth; accents only) -- */
+  --gold-700: #8a6526;
+  --gold-600: #a67c34;
+  --gold-500: #c39a4f;
+  --gold-200: #e8dcc2;
+
+  /* -- Semantic -- */
+  --success-600: #3d7a52;
+  --success-100: #e2efe6;
+  --warning-600: #b0812c;
+  --warning-100: #f6ecd7;
+  --error-600: #a83a33;
+  --error-100: #f4e0de;
+  --info-600: var(--navy-600);
+  --info-100: var(--navy-100);
+
+  /* ---------- Semantic aliases ---------- */
+  --brand: var(--navy-700);
+  --brand-strong: var(--navy-900);
+  --brand-soft: var(--navy-100);
+  --accent: var(--gold-600);
+
+  --text-strong: var(--ink-900);
+  --text-body: var(--ink-700);
+  --text-muted: var(--ink-500);
+  --text-on-dark: #f4f3f1;
+  --text-on-dark-muted: #b9c2cc;
+  --text-brand: var(--navy-700);
+
+  --surface-page: var(--paper);
+  --surface-alt: var(--paper-alt);
+  --surface-card: var(--paper);
+  --surface-dark: var(--ink-900);
+  --surface-brand: var(--navy-700);
+  --surface-footer: var(--navy-500);
+
+  --border-subtle: var(--stone-200);
+  --border-default: var(--stone-300);
+  --border-strong: var(--stone-500);
+
+  --link: var(--navy-600);
+  --link-hover: var(--navy-800);
+  --focus-ring: var(--navy-500);
+}

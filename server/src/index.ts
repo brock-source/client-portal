@@ -47,41 +47,18 @@ app.use("/api/admin", adminRouter);
 app.use("/api/client", clientRouter);
 app.use("/api/ask-brock", askBrockRouter);
 
-const webRoot = process.cwd().includes("server")
-  ? path.join(process.cwd(), "..", "web", "dist")
-  : path.join(process.cwd(), "web", "dist");
+const publicDir = path.join(__dirname, "..", "public");
+const indexPath = path.join(publicDir, "index.html");
 
-logger.info(`CWD: ${process.cwd()}`);
-logger.info(`Web root: ${webRoot}`);
-logger.info(`Web root exists: ${fs.existsSync(webRoot)}`);
-
-const indexPath = path.join(webRoot, "index.html");
-logger.info(`Index.html path: ${indexPath}`);
-logger.info(`Index.html exists: ${fs.existsSync(indexPath)}`);
-
-if (fs.existsSync(webRoot)) {
-  app.use(express.static(webRoot, { extensions: ["html"] }));
-  logger.info("Static middleware enabled");
-}
+logger.info(`Serving static files from: ${publicDir}`);
+app.use(express.static(publicDir));
 
 app.use((req, res, next) => {
   if (req.method === "GET" && !req.path.startsWith("/api")) {
-    logger.info(`SPA fallback for: ${req.path}`);
-    try {
-      if (fs.existsSync(indexPath)) {
-        const content = fs.readFileSync(indexPath, "utf-8");
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        return res.send(content);
-      }
-    } catch (err) {
-      logger.error(`Error reading index.html: ${err}`);
-    }
+    res.sendFile(indexPath);
+  } else {
+    next();
   }
-  next();
-});
-
-app.get("*", (_req, res) => {
-  res.status(404).send("Not found");
 });
 
 app.use(errorHandler);
