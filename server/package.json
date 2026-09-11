@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p .",
+    "build": "cd ../web && npm install && npm run build && cd ../server && tsc -p .",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",

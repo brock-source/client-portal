@@ -5,6 +5,7 @@ import cors from "cors";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { Pool } from "pg";
+import path from "path";
 import { authRouter } from "./routes/auth";
 import { adminRouter } from "./routes/admin";
 import { clientRouter } from "./routes/client";
@@ -44,6 +45,12 @@ app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/client", clientRouter);
 app.use("/api/ask-brock", askBrockRouter);
+
+const distPath = path.join(__dirname, "..", "..", "web", "dist");
+app.use(express.static(distPath));
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
 
 app.use(errorHandler);
 
