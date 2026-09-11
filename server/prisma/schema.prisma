@@ -1,0 +1,284 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum PhaseStatus {
+  LOCKED
+  IN_PROGRESS
+  COMPLETE
+}
+
+enum MeetingStatus {
+  REQUESTED
+  SCHEDULED
+}
+
+enum ChecklistCompleter {
+  CLIENT
+  ADMIN
+}
+
+enum PolicyType {
+  LIFE
+  DISABILITY
+  LONG_TERM_CARE
+  UMBRELLA
+  HEALTH
+  OTHER
+}
+
+enum PolicyStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  LAPSED
+  CANCELLED
+  PENDING
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  role         Role
+  createdAt    DateTime @default(now())
+
+  client       Client?
+  invites      InviteToken[]
+  uploads      Document[] @relation("UploadedBy")
+  actionItemsCreated ActionItem[] @relation("ActionItemCreatedBy")
+  clientMessagesSent ClientMessage[] @relation("ClientMessageAuthor")
+  adminNotifications AdminNotification[] @relation("AdminNotificationRecipient")
+}
+
+model InviteToken {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  token      String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Client {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  firstName      String
+  lastName       String
+  phone          String?
+  householdLabel String
+  healthRating   String?
+  legacyHandoffCompletedAt DateTime?
+  welcomeSeenAt  DateTime?
+  createdAt      DateTime @default(now())
+
+  progress OnboardingProgress[]
+  documents Document[]
+  meetings Meeting[]
+  checklistCompletions ChecklistCompletion[]
+  missingDocumentFlags MissingDocumentFlag[]
+  actionItems  ActionItem[]
+  messages     ClientMessage[]
+  notifications AdminNotification[]
+  clientNotifications ClientNotification[]
+  notificationPreference NotificationPreference?
+  policies     Policy[]
+}
+
+model OnboardingProgress {
+  id          String      @id @default(cuid())
+  clientId    String
+  client      Client      @relation(fields: [clientId], references: [id])
+  phase       Int
+  status      PhaseStatus @default(LOCKED)
+  completedAt DateTime?
+
+  @@unique([clientId, phase])
+}
+
+model DocumentCategory {
+  id        String @id @default(cuid())
+  phase     Int
+  key       String @unique
+  label     String
+  hint      String?
+  sortOrder Int
+
+  documents Document[]
+  missingFlags MissingDocumentFlag[]
+}
+
+model MissingDocumentFlag {
+  id         String   @id @default(cuid())
+  clientId   String
+  client     Client   @relation(fields: [clientId], references: [id])
+  categoryId String
+  category   DocumentCategory @relation(fields: [categoryId], references: [id])
+  markedAt   DateTime @default(now())
+
+  @@unique([clientId, categoryId])
+}
+
+model Document {
+  id             String           @id @default(cuid())
+  clientId       String
+  client         Client           @relation(fields: [clientId], references: [id])
+  categoryId     String
+  category       DocumentCategory @relation(fields: [categoryId], references: [id])
+  filename       String
+  storedPath     String
+  uploadedByUserId String
+  uploadedBy     User             @relation("UploadedBy", fields: [uploadedByUserId], references: [id])
+  uploadedAt     DateTime         @default(now())
+}
+
+model ChecklistItem {
+  id          String             @id @default(cuid())
+  phase       Int
+  key         String             @unique
+  label       String
+  completedBy ChecklistCompleter
+  sortOrder   Int
+
+  completions ChecklistCompletion[]
+}
+
+model ChecklistCompletion {
+  id              String        @id @default(cuid())
+  clientId        String
+  client          Client        @relation(fields: [clientId], references: [id])
+  itemId          String
+  item            ChecklistItem @relation(fields: [itemId], references: [id])
+  completedByUserId String
+  completedAt     DateTime      @default(now())
+
+  @@unique([clientId, itemId])
+}
+
+model Meeting {
+  id          String        @id @default(cuid())
+  clientId    String
+  client      Client        @relation(fields: [clientId], references: [id])
+  phase       Int
+  status      MeetingStatus @default(REQUESTED)
+  requestedAt DateTime      @default(now())
+}
+
+model ActionItem {
+  id              String    @id @default(cuid())
+  clientId        String
+  client          Client    @relation(fields: [clientId], references: [id])
+  text            String
+  completed       Boolean   @default(false)
+  completedAt     DateTime?
+  createdByUserId String
+  createdBy       User      @relation("ActionItemCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt       DateTime  @default(now())
+
+  @@index([clientId])
+}
+
+model ClientMessage {
+  id           String   @id @default(cuid())
+  clientId     String
+  client       Client   @relation(fields: [clientId], references: [id])
+  authorUserId String
+  author       User     @relation("ClientMessageAuthor", fields: [authorUserId], references: [id])
+  authorRole   Role
+  body         String
+  createdAt    DateTime @default(now())
+
+  notifications AdminNotification[]
+
+  @@index([clientId, createdAt])
+}
+
+model AdminNotification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation("AdminNotificationRecipient", fields: [userId], references: [id])
+  clientId  String
+  client    Client    @relation(fields: [clientId], references: [id])
+  messageId String
+  message   ClientMessage @relation(fields: [messageId], references: [id])
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+model ClientNotification {
+  id        String    @id @default(cuid())
+  clientId  String
+  client    Client    @relation(fields: [clientId], references: [id])
+  type      String    // "action_item" | "message" | "document"
+  title     String
+  body      String
+  relatedId String?   // ID of related record (actionItemId, messageId, documentId)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([clientId, readAt])
+}
+
+model Policy {
+  id                String        @id @default(cuid())
+  clientId          String
+  client            Client        @relation(fields: [clientId], references: [id])
+
+  policyNumber      String        @unique
+  policyType        PolicyType
+  status            PolicyStatus  @default(ACTIVE)
+  insurer           String?
+
+  coverageAmount    Decimal
+  premium           Decimal?
+  premiumFrequency  String?
+  beneficiary       String?
+
+  issueDate         DateTime
+  expirationDate    DateTime?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([clientId])
+  @@index([status])
+}
+
+model NotificationPreference {
+  id                    String   @id @default(cuid())
+  clientId              String   @unique
+  client                Client   @relation(fields: [clientId], references: [id])
+
+  deliveryMethods       String[] @default(["in_app"]) // "in_app", "email", "sms"
+
+  actionItemsEnabled    Boolean  @default(true)
+  messagesEnabled       Boolean  @default(true)
+  documentsEnabled      Boolean  @default(true)
+
+  notificationFrequency String   @default("real_time") // "real_time" | "daily_digest" | "weekly_digest"
+  digestTime            String?  // "09:00" for digest emails (HH:mm format)
+
+  notificationEmail     String?
+  notificationPhone     String?
+  phoneVerified         Boolean  @default(false)
+  emailVerified         Boolean  @default(false)
+
+  timezone              String   @default("America/Chicago")
+
+  updatedAt             DateTime @updatedAt
+  createdAt             DateTime @default(now())
+}
