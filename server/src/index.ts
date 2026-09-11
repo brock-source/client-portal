@@ -47,22 +47,31 @@ app.use("/api/admin", adminRouter);
 app.use("/api/client", clientRouter);
 app.use("/api/ask-brock", askBrockRouter);
 
-const distPath = path.resolve(process.cwd(), "..", "web", "dist");
-logger.info(`Serving static files from: ${distPath}`);
+const webRoot = process.cwd().includes("server")
+  ? path.join(process.cwd(), "..", "web", "dist")
+  : path.join(process.cwd(), "web", "dist");
 
-try {
-  app.use(express.static(distPath));
-  app.get("*", (_req, res) => {
-    const indexPath = path.join(distPath, "index.html");
-    if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath);
-    } else {
-      res.status(404).json({ error: "Not found" });
-    }
-  });
-} catch (err) {
-  logger.error("Error setting up static file serving:", err);
+logger.info(`CWD: ${process.cwd()}`);
+logger.info(`Web root: ${webRoot}`);
+logger.info(`Web root exists: ${fs.existsSync(webRoot)}`);
+
+const indexPath = path.join(webRoot, "index.html");
+logger.info(`Index.html path: ${indexPath}`);
+logger.info(`Index.html exists: ${fs.existsSync(indexPath)}`);
+
+if (fs.existsSync(webRoot)) {
+  app.use(express.static(webRoot, { extensions: ["html"] }));
+  logger.info("Static middleware enabled");
 }
+
+app.get("*", (req, res) => {
+  logger.info(`Fallback route for: ${req.path}`);
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send("Not found");
+  }
+});
 
 app.use(errorHandler);
 
