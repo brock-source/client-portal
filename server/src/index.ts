@@ -48,17 +48,20 @@ app.use("/api/client", clientRouter);
 app.use("/api/ask-brock", askBrockRouter);
 
 const distPath = path.resolve(process.cwd(), "..", "web", "dist");
-logger.info(`CWD: ${process.cwd()}`);
-logger.info(`Static files path: ${distPath}`);
-logger.info(`Static files exist: ${fs.existsSync(distPath)}`);
+logger.info(`Serving static files from: ${distPath}`);
 
-if (fs.existsSync(distPath)) {
+try {
   app.use(express.static(distPath));
   app.get("*", (_req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
+    const indexPath = path.join(distPath, "index.html");
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).json({ error: "Not found" });
+    }
   });
-} else {
-  logger.warn("Static files directory not found, serving API only");
+} catch (err) {
+  logger.error("Error setting up static file serving:", err);
 }
 
 app.use(errorHandler);
