@@ -265,7 +265,7 @@ clientRouter.post("/documents/:categoryId/missing", validateParams(categoryIdPar
 });
 
 clientRouter.post("/phases/:phase/schedule-meeting", validateParams(phaseParamSchema), async (req, res) => {
-  const { phase } = req.params;
+  const phase = Number(req.params.phase);
   const client = await getOwnClient(req.session.userId!);
   if (!client) throw new AppError(404, "CLIENT_NOT_FOUND", "Client profile not found");
 
