@@ -6,6 +6,7 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { Pool } from "pg";
 import path from "path";
+import fs from "fs";
 import { authRouter } from "./routes/auth";
 import { adminRouter } from "./routes/admin";
 import { clientRouter } from "./routes/client";
@@ -47,10 +48,17 @@ app.use("/api/client", clientRouter);
 app.use("/api/ask-brock", askBrockRouter);
 
 const distPath = path.join(__dirname, "..", "..", "web", "dist");
-app.use(express.static(distPath));
-app.get("*", (_req, res) => {
-  res.sendFile(path.join(distPath, "index.html"));
-});
+logger.info(`Static files path: ${distPath}`);
+logger.info(`Static files exist: ${fs.existsSync(distPath)}`);
+
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+} else {
+  logger.warn("Static files directory not found, serving API only");
+}
 
 app.use(errorHandler);
 
