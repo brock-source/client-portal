@@ -47,7 +47,8 @@ app.use("/api/admin", adminRouter);
 app.use("/api/client", clientRouter);
 app.use("/api/ask-brock", askBrockRouter);
 
-const distPath = path.join(__dirname, "..", "..", "web", "dist");
+const distPath = path.resolve(process.cwd(), "..", "web", "dist");
+logger.info(`CWD: ${process.cwd()}`);
 logger.info(`Static files path: ${distPath}`);
 logger.info(`Static files exist: ${fs.existsSync(distPath)}`);
 
