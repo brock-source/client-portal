@@ -65,11 +65,20 @@ if (fs.existsSync(webRoot)) {
 }
 
 app.get("*", (req, res) => {
-  logger.info(`Fallback route for: ${req.path}`);
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(404).send("Not found");
+  logger.info(`Fallback route hit for: ${req.path}`);
+  try {
+    if (fs.existsSync(indexPath)) {
+      logger.info(`Serving index.html from ${indexPath}`);
+      const content = fs.readFileSync(indexPath, "utf-8");
+      res.setHeader("Content-Type", "text/html");
+      res.send(content);
+    } else {
+      logger.warn(`Index.html not found at ${indexPath}`);
+      res.status(404).send("Index.html not found");
+    }
+  } catch (err) {
+    logger.error(`Error serving index.html: ${err}`);
+    res.status(500).send(`Error: ${err}`);
   }
 });
 
