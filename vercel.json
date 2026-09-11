@@ -1,0 +1,8 @@
+{
+  "buildCommand": "cd web && npm install && npm run build",
+  "outputDirectory": "web/dist",
+  "framework": "vite",
+  "env": {
+    "VITE_API_URL": "https://client-portal-production-4237.up.railway.app/api"
+  }
+}
