@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import logger from "../utils/logger";
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "StoneCentury <onboarding@resend.dev>";
 
 function escapeHtml(unsafe: string): string {
   return unsafe
