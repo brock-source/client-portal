@@ -9,12 +9,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Phase 2: SMS 2FA Frontend (In Progress)
-- Frontend components for password setup with phone number
-- OTP verification page with 6-digit code input
-- Login flow integration with 2FA redirect
-- Mobile-responsive UI
-- Timer/countdown component for code expiry
+---
+
+## [0.2.1] - 2026-09-14
+
+### Added: SMS 2FA Phase 2 Frontend Components
+
+#### Phone Number Utilities
+- Created `phoneFormat.ts` with utilities:
+  - `formatPhoneNumber()`: Live formatting as user types (123) 456-7890
+  - `phoneToE164()`: Converts user input to E.164 format (+11234567890)
+  - `isValidPhoneNumber()`: Validates E.164 format
+  - `maskPhoneNumber()`: Hides sensitive digits for logging
+
+#### SetPassword Page Updates
+- Added optional phone number field during password setup
+- Real-time phone number formatting
+- Validation indicator (✓ Valid / ✗ Invalid)
+- Helper text: "Optional - for secure two-factor verification"
+- Converts phone input to E.164 before sending to backend
+- Backend automatically enables 2FA when phone provided
+
+#### Login Page Updates
+- Detects 2FA requirement from login response
+- Redirects to `/verify-otp?userId={userId}` when needed
+- Supports legacy flow (no 2FA) for users without phone number
+
+#### VerifyOTP Page (New)
+- 6-digit code input with monospace formatting
+- Real-time countdown timer (15 minutes)
+- Numeric-only input validation
+- Auto-disables input at 6 digits
+- "Code expires in MM:SS" display
+- "Back to Sign In" option for expired codes
+- Clean error messaging for failed verifications
+
+#### API Client Updates
+- `login()`: Updated return type to include `twoFactorRequired` flag
+- `setPassword()`: Added optional `phoneNumber` parameter
+- `verifyOtp(userId, code)`: New endpoint for OTP verification
+
+#### Routing
+- Added `/verify-otp` route (not protected, part of auth flow)
+- Proper redirect flow: Login → (if 2FA) → VerifyOTP → Dashboard
+
+#### Security Features
+- E.164 phone validation on frontend and backend
+- OTP codes restricted to 6 digits only
+- 15-minute expiry countdown display
+- Server-side hashing of OTP codes (bcrypt)
+- 3-attempt lockout (enforced by backend)
+
+#### Testing & Verification
+- ✅ Phone formatting works: "5551234567" → "(555) 123-4567"
+- ✅ OTP input accepts 6 digits with proper spacing
+- ✅ Verify button enables/disables based on code length
+- ✅ Countdown timer updates in real-time
+- ✅ Form validation prevents invalid submissions
+- ✅ All components compile without errors
+- ✅ Mobile-responsive design (tested at multiple breakpoints)
+
+#### Files Changed
+- `web/src/utils/phoneFormat.ts` (NEW)
+- `web/src/pages/VerifyOTP.tsx` (NEW)
+- `web/src/pages/SetPassword.tsx` (UPDATED - phone field added)
+- `web/src/pages/Login.tsx` (UPDATED - 2FA redirect)
+- `web/src/api/client.ts` (UPDATED - 2FA methods)
+- `web/src/App.tsx` (UPDATED - /verify-otp route)
 
 ---
 
@@ -161,11 +222,11 @@ All features are implemented following security best practices:
 
 ## Next Planned Features (Priority Order)
 
-1. **Phase 2: SMS 2FA Frontend** (Est. 3-4 days)
-   - Password setup with phone number collection
-   - OTP verification page
-   - Login flow integration
-   - Mobile-responsive UI
+1. **Twilio SMS Integration** (Est. 1 day, awaiting payment confirmation)
+   - Replace console logging with actual SMS sends
+   - Set environment variables (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+   - Test end-to-end OTP delivery
+   - Security: Phone number masking in logs
 
 2. **Financial Picture / Net Worth Dashboard** (Est. 2-3 weeks)
    - Client net worth visualization (line chart)
@@ -184,7 +245,8 @@ All features are implemented following security best practices:
 
 | Version | Date | Major Changes | Status |
 |---------|------|---------------|--------|
-| 0.2.0 | 2026-09-14 | SMS 2FA Phase 1 (Backend) | In Progress |
+| 0.2.1 | 2026-09-14 | SMS 2FA Phase 2 (Frontend) | Complete |
+| 0.2.0 | 2026-09-14 | SMS 2FA Phase 1 (Backend) | Complete |
 | 0.1.0 | 2026-09-11 | My Coverage Feature | Complete |
 | 0.0.1 | 2026-09-01 | Initial Setup | Complete |
 
