@@ -33,6 +33,12 @@ async function sendEmailWithRetry(
         html,
       });
 
+      logger.info(`Resend API response:`, undefined, { response: JSON.stringify(response) });
+
+      if (response.error) {
+        throw new Error(`Resend error: ${JSON.stringify(response.error)}`);
+      }
+
       logger.info(`Email sent successfully to ${to}`, undefined, { subject, messageId: response.id });
       return;
     } catch (err) {
