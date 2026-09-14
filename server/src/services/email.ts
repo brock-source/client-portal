@@ -6,6 +6,9 @@ const FROM_EMAIL = "onboarding@stonecenturyfinancial.com";
 let resend: Resend | null = null;
 if (process.env.RESEND_API_KEY) {
   resend = new Resend(process.env.RESEND_API_KEY);
+  logger.info("Resend initialized with API key");
+} else {
+  logger.warn("RESEND_API_KEY environment variable not set");
 }
 
 async function sendEmailWithRetry(
@@ -15,25 +18,29 @@ async function sendEmailWithRetry(
   maxAttempts: number = 3
 ): Promise<void> {
   if (!resend) {
-    logger.warn("Resend API key not configured. Email not sent.", undefined, { to, subject });
+    logger.warn("Resend client not initialized - API key may not be configured", undefined, { to, subject });
     return;
   }
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      await resend.emails.send({
+      logger.info(`Attempting to send email (attempt ${attempt}/${maxAttempts})`, undefined, { to, from: FROM_EMAIL, subject });
+
+      const response = await resend.emails.send({
         from: FROM_EMAIL,
         to,
         subject,
         html,
       });
-      logger.info(`Email sent successfully to ${to}`, { subject });
+
+      logger.info(`Email sent successfully to ${to}`, undefined, { subject, messageId: response.id });
       return;
     } catch (err) {
-      logger.warn(`Email send attempt ${attempt}/${maxAttempts} failed`, err as Error, { to, subject });
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      logger.warn(`Email send attempt ${attempt}/${maxAttempts} failed: ${errorMsg}`, err as Error, { to, subject, from: FROM_EMAIL });
 
       if (attempt === maxAttempts) {
-        logger.error(`Failed to send email after ${maxAttempts} attempts`, err as Error, { to, subject });
+        logger.error(`Failed to send email after ${maxAttempts} attempts: ${errorMsg}`, err as Error, { to, subject, from: FROM_EMAIL });
         throw err;
       }
 
