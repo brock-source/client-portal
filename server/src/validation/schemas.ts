@@ -11,11 +11,20 @@ import {
 export const setPasswordSchema = z.object({
   token: tokenSchema,
   password: passwordSchema,
+  phoneNumber: z
+    .string()
+    .regex(/^\+1\d{10}$/, "Phone number must be in format +1234567890")
+    .optional(),
 });
 
 export const loginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Password is required"),
+});
+
+export const verifyOtpSchema = z.object({
+  userId: idSchema,
+  code: z.string().regex(/^\d{6}$/, "Code must be 6 digits"),
 });
 
 // Admin routes

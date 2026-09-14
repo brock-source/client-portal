@@ -47,18 +47,22 @@ enum PolicyStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String?
-  role         Role
-  createdAt    DateTime @default(now())
+  id                   String   @id @default(cuid())
+  email                String   @unique
+  passwordHash         String?
+  role                 Role
+  phoneNumber          String?  // E.164 format: +1234567890
+  twoFactorEnabled     Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  client       Client?
-  invites      InviteToken[]
-  uploads      Document[] @relation("UploadedBy")
-  actionItemsCreated ActionItem[] @relation("ActionItemCreatedBy")
-  clientMessagesSent ClientMessage[] @relation("ClientMessageAuthor")
-  adminNotifications AdminNotification[] @relation("AdminNotificationRecipient")
+  client               Client?
+  invites              InviteToken[]
+  uploads              Document[] @relation("UploadedBy")
+  actionItemsCreated   ActionItem[] @relation("ActionItemCreatedBy")
+  clientMessagesSent   ClientMessage[] @relation("ClientMessageAuthor")
+  adminNotifications   AdminNotification[] @relation("AdminNotificationRecipient")
+  verificationCodes    VerificationCode[]
 }
 
 model InviteToken {
@@ -281,4 +285,20 @@ model NotificationPreference {
 
   updatedAt             DateTime @updatedAt
   createdAt             DateTime @default(now())
+}
+
+model VerificationCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  code      String    // 6-digit code (hashed before storing)
+  expiresAt DateTime  // 15 minutes from creation
+  attempts  Int       @default(0)  // Track failed attempts (max 3)
+  used      Boolean   @default(false)  // Mark as used after verification
+
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
