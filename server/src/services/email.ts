@@ -48,7 +48,7 @@ async function sendEmailWithRetry(
         throw new Error(`Resend error: ${JSON.stringify(response.error)}`);
       }
 
-      logger.info(`Email sent successfully to ${to}`, undefined, { subject, messageId: response.id });
+      logger.info(`Email sent successfully to ${to}`, undefined, { subject, response });
       return;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
@@ -74,58 +74,68 @@ export async function sendInviteEmailService(email: string, inviteToken: string)
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif; margin: 0; padding: 0; background-color: #f1f0ee; }
-        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-        .header { background: linear-gradient(135deg, #2e4763 0%, #223549 100%); padding: 40px 30px; text-align: center; }
-        .logo { font-size: 24px; font-weight: 600; color: #ffffff; margin-bottom: 10px; }
-        .logo-subtitle { font-size: 12px; color: #b3c1d2; letter-spacing: 1px; }
-        .content { padding: 40px 30px; }
-        .greeting { font-size: 18px; font-weight: 600; color: #171717; margin-bottom: 20px; }
-        .body-text { font-size: 15px; line-height: 1.6; color: #333333; margin-bottom: 30px; }
-        .cta-button { display: inline-block; background-color: #2e4763; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; }
-        .cta-button:hover { background-color: #223549; }
-        .footer-divider { border-top: 1px solid #dcdfe2; margin: 30px 0; }
-        .footer-text { font-size: 12px; color: #595653; text-align: center; }
-        .footer-text a { color: #2e4763; text-decoration: none; }
-        .expiry-notice { font-size: 13px; color: #878c92; margin-top: 20px; }
+        * { margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif; background-color: #f1f0ee; padding: 20px 0; }
+        .wrapper { max-width: 600px; margin: 0 auto; }
+        .container { background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #2e4763 0%, #223549 100%); padding: 50px 30px; text-align: center; }
+        .logo { font-size: 28px; font-weight: 700; color: #ffffff; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .logo-subtitle { font-size: 11px; color: #b3c1d2; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
+        .content { padding: 50px 40px; }
+        .greeting { font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 24px; line-height: 1.3; }
+        .body-text { font-size: 15px; line-height: 1.7; color: #333333; margin-bottom: 24px; }
+        .body-text:last-of-type { margin-bottom: 36px; }
+        .cta-container { text-align: center; margin: 48px 0; }
+        .cta-button { display: inline-block; background-color: #2e4763; color: #ffffff !important; padding: 16px 48px; text-decoration: none !important; border-radius: 6px; font-weight: 700; font-size: 15px; letter-spacing: 0.5px; border: none; }
+        .cta-button:hover { background-color: #1a2a3a; }
+        .security-notice { background-color: #f7f5f2; border-left: 4px solid #a67c34; padding: 16px 20px; border-radius: 4px; margin: 32px 0; }
+        .security-notice p { font-size: 13px; line-height: 1.6; color: #595653; margin: 0; }
+        .security-notice strong { color: #2e4763; font-weight: 700; }
+        .divider { border-top: 1px solid #e5e5e5; margin: 32px 0; }
+        .footer { background-color: #f7f5f2; padding: 30px 40px; text-align: center; }
+        .footer-text { font-size: 12px; color: #595653; line-height: 1.8; }
+        .footer-text a { color: #2e4763; text-decoration: none; font-weight: 600; }
+        .footer-text a:hover { text-decoration: underline; }
+        .footer-brand { font-size: 13px; font-weight: 700; color: #2e4763; margin-bottom: 12px; }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <div class="logo">StoneCentury</div>
-          <div class="logo-subtitle">FINANCIAL ADVISORS</div>
-        </div>
-
-        <div class="content">
-          <div class="greeting">Welcome to Your Private Client Portal</div>
-
-          <p class="body-text">
-            You've been invited to access the StoneCentury Private Client Portal—your secure gateway to your financial information, documents, and advisories.
-          </p>
-
-          <p class="body-text">
-            Click the button below to set your password and activate your account:
-          </p>
-
-          <div style="text-align: center; margin: 40px 0;">
-            <a href="${escapeHtml(inviteUrl)}" class="cta-button">Activate Your Account</a>
+      <div class="wrapper">
+        <div class="container">
+          <div class="header">
+            <div class="logo">StoneCentury</div>
+            <div class="logo-subtitle">Financial Advisors</div>
           </div>
 
-          <p class="expiry-notice">
-            <strong>Security Note:</strong> This activation link expires in 7 days. If you didn't request this invitation, please contact us immediately.
-          </p>
+          <div class="content">
+            <div class="greeting">Welcome to Your Private Client Portal</div>
 
-          <div class="footer-divider"></div>
+            <p class="body-text">
+              You've been invited to access the StoneCentury Private Client Portal — your secure gateway to your financial information, documents, and strategic advisories.
+            </p>
 
-          <div class="footer-text">
-            <p style="margin: 0;">StoneCentury Financial Advisors</p>
-            <p style="margin: 8px 0 0 0;">
-              <a href="https://stonecentury.com">Visit Our Website</a>
+            <p class="body-text">
+              To get started, please activate your account by setting a secure password below:
             </p>
-            <p style="margin: 12px 0 0 0; color: #878c92;">
-              Questions? Contact our support team for assistance.
-            </p>
+
+            <div class="cta-container">
+              <a href="${escapeHtml(inviteUrl)}" class="cta-button">Activate Your Account</a>
+            </div>
+
+            <div class="security-notice">
+              <p><strong>Security:</strong> This activation link expires in 7 days. If you didn't request this invitation, please disregard this email and contact our team immediately.</p>
+            </div>
+          </div>
+
+          <div class="footer">
+            <div class="footer-brand">StoneCentury Financial Advisors</div>
+            <div class="footer-text">
+              <p style="margin-bottom: 12px;">
+                <a href="https://stonecentury.com">Visit Our Website</a> •
+                <a href="mailto:support@stonecentury.com">Contact Support</a>
+              </p>
+              <p>© 2026 StoneCentury Financial Advisors. All rights reserved.</p>
+            </div>
           </div>
         </div>
       </div>
