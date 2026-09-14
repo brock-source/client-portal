@@ -11,6 +11,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.1] - 2026-09-14
+
+### Added: My Coverage Search, Filter, and Sort Enhancements
+
+#### Search Functionality
+- Multi-criteria search across policy number, insurer, beneficiary, and type
+- Real-time search as user types
+- Case-insensitive matching
+
+#### Filtering Options
+- **Filter by Status**: ACTIVE, INACTIVE, EXPIRED, LAPSED, CANCELLED, PENDING
+- **Filter by Type**: LIFE, DISABILITY, LONG_TERM_CARE, UMBRELLA, HEALTH, OTHER
+- Ability to combine filters for precise results
+
+#### Sorting Capabilities
+- Sort by policy number (alphabetical)
+- Sort by policy type (alphabetical)
+- Sort by coverage amount (high to low)
+- Sort by premium (high to low)
+- Sort by status (alphabetical)
+
+#### User Experience Improvements
+- Responsive control layout with CSS Grid (search input + 3 filter dropdowns)
+- Result count display: "Showing X of Y policies"
+- Empty filter state message: "No policies match your filters. Try adjusting your search or filters."
+- All controls visible when policies exist
+- Real-time filtering without page refresh
+- All filtering performed client-side (no backend changes needed)
+
+#### Files Changed
+- `web/src/pages/MyCoverage.tsx` (UPDATED - added search, filter, sort state and logic)
+
+#### Testing & Verification
+- ✅ Search works across all policy fields
+- ✅ Multi-filter combinations work correctly
+- ✅ Sorting applies after filtering
+- ✅ Result count updates in real-time
+- ✅ Empty state message displays when appropriate
+- ✅ Responsive design tested at multiple breakpoints
+
+---
+
 ## [0.2.1] - 2026-09-14
 
 ### Added: SMS 2FA Phase 2 Frontend Components
@@ -247,6 +289,7 @@ All features are implemented following security best practices:
 |---------|------|---------------|--------|
 | 0.2.1 | 2026-09-14 | SMS 2FA Phase 2 (Frontend) | Complete |
 | 0.2.0 | 2026-09-14 | SMS 2FA Phase 1 (Backend) | Complete |
+| 0.1.1 | 2026-09-14 | My Coverage Search, Filter, Sort | Complete |
 | 0.1.0 | 2026-09-11 | My Coverage Feature | Complete |
 | 0.0.1 | 2026-09-01 | Initial Setup | Complete |
 
