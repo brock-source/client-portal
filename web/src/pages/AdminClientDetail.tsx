@@ -4,6 +4,7 @@ import { api, HEALTH_RATING_OPTIONS } from "../api/client";
 import { PortalShell } from "../components/PortalShell";
 import { Badge, Button } from "../components/ui";
 import { PolicyManagementSection } from "../components/PolicyManagementSection";
+import { ResendInviteButton } from "../components/ResendInviteButton";
 
 type Detail = Awaited<ReturnType<typeof api.admin.clientDetail>>;
 
@@ -56,7 +57,9 @@ export default function AdminClientDetail() {
           <DeleteClientButton clientId={data.client.id} fullName={`${data.client.firstName} ${data.client.lastName}`} />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: 36 }}>
+        <ResendInviteButton clientId={data.client.id} passwordSet={data.client.passwordSet} onSuccess={load} />
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: 36, marginTop: 20 }}>
           {data.progress.map((p) => (
             <div key={p.phase} style={{ textAlign: "center", padding: "14px 8px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-subtle)", background: "#fff" }}>
               <div className="sc-eyebrow" style={{ fontSize: 10, marginBottom: 6 }}>Phase {p.phase}</div>

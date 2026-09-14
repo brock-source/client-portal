@@ -54,7 +54,7 @@ adminRouter.post("/clients", validateBody(schemas.createClientSchema), async (re
 
   const result = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
-      data: { email, role: "CLIENT" },
+      data: { email, role: "CLIENT", updatedAt: new Date() },
     });
     const client = await tx.client.create({
       data: { userId: user.id, firstName, lastName, phone, householdLabel: `${firstName} ${lastName}` },
@@ -176,6 +176,7 @@ adminRouter.get("/clients/:id", validateParams(idParamSchema), async (req, res) 
       householdLabel: client.householdLabel,
       healthRating: client.healthRating,
       legacyHandoffCompletedAt: client.legacyHandoffCompletedAt,
+      passwordSet: !!client.user.passwordHash,
     },
     progress,
     phase1Categories: categories.map((cat) => ({
@@ -202,6 +203,44 @@ adminRouter.get("/clients/:id", validateParams(idParamSchema), async (req, res) 
     })),
     messages: messages.map((m) => ({ id: m.id, body: m.body, authorRole: m.authorRole, createdAt: m.createdAt })),
   });
+});
+
+adminRouter.post("/clients/:id/resend-invite", validateParams(idParamSchema), async (req, res) => {
+  const { id } = req.params;
+
+  const client = await prisma.client.findUnique({
+    where: { id },
+    include: { user: true },
+  });
+
+  if (!client) {
+    throw new AppError(404, "CLIENT_NOT_FOUND", "Client not found");
+  }
+
+  if (client.user.passwordHash) {
+    throw new AppError(400, "PASSWORD_ALREADY_SET", "This client has already set a password");
+  }
+
+  // Create a new invite token
+  const token = crypto.randomBytes(32).toString("hex");
+  const INVITE_TTL_DAYS = 7;
+
+  await prisma.inviteToken.create({
+    data: {
+      userId: client.userId,
+      token,
+      expiresAt: new Date(Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000),
+    },
+  });
+
+  // Send email
+  sendInviteEmail(client.user.email, token).catch(() => {
+    logger.error("Failed to send resend invite email", undefined, { email: client.user.email });
+  });
+
+  logger.info(`Resend invite email sent to ${client.user.email}`);
+
+  res.ok({ ok: true, message: "Invitation email resent successfully" });
 });
 
 adminRouter.delete("/clients/:id", validateParams(idParamSchema), validateBody(schemas.deleteClientSchema), async (req, res) => {

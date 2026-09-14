@@ -221,6 +221,10 @@ export const api = {
       request<{ ok: true }>(`/admin/clients/${clientId}/policies/${policyId}`, {
         method: "DELETE",
       }),
+    resendInvite: (clientId: string) =>
+      request<{ ok: true; message: string }>(`/admin/clients/${clientId}/resend-invite`, {
+        method: "POST",
+      }),
   },
 
   client: {
