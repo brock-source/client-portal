@@ -23,7 +23,22 @@ const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";
 const pgPool = new Pool({ connectionString: process.env.DATABASE_URL });
 const PgSession = connectPgSimple(session);
 
-app.use(cors({ origin: WEB_ORIGIN, credentials: true }));
+const allowedOrigins = [
+  WEB_ORIGIN,
+  "http://localhost:5173",
+  "https://brock-source.github.io",
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins for now in production
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use(requestLogger);
 app.use(responseFormatter);
