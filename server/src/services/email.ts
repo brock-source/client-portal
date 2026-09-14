@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import logger from "../utils/logger";
 
-const FROM_EMAIL = "onboarding@stonecenturyfinancial.com";
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
 let resend: Resend | null = null;
 if (process.env.RESEND_API_KEY) {
