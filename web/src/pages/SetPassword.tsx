@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { Button } from "../components/ui";
+import { formatPhoneNumber, phoneToE164, isValidPhoneNumber } from "../utils/phoneFormat";
 
 export default function SetPassword() {
   const [params] = useSearchParams();
   const token = params.get("token") ?? "";
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -20,9 +22,14 @@ export default function SetPassword() {
       setError("Passwords don't match.");
       return;
     }
+    if (phone && !isValidPhoneNumber(phone)) {
+      setError("Please enter a valid phone number");
+      return;
+    }
     setSubmitting(true);
     try {
-      await api.setPassword(token, password);
+      const e164Phone = phone ? phoneToE164(phone) : undefined;
+      await api.setPassword(token, password, e164Phone);
       setDone(true);
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
@@ -89,6 +96,26 @@ export default function SetPassword() {
             onChange={(e) => setConfirm(e.target.value)}
             style={inputStyle}
           />
+        </label>
+        <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: 18 }} />
+        <p style={{ margin: 0, fontFamily: "var(--font-body)", fontSize: 13, color: "var(--text-muted)" }}>
+          Enable two-factor authentication (optional)
+        </p>
+        <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <span className="sc-eyebrow" style={{ fontSize: 10 }}>
+            Phone number
+          </span>
+          <input
+            type="tel"
+            inputMode="numeric"
+            placeholder="(123) 456-7890"
+            value={phone}
+            onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
+            style={inputStyle}
+          />
+          <span style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+            {phone ? (isValidPhoneNumber(phone) ? "✓ Valid" : "✗ Invalid format") : "Optional - for secure two-factor verification"}
+          </span>
         </label>
         {error && <div style={{ color: "var(--error-600, #b33)", fontSize: 14 }}>{error}</div>}
         <Button type="submit" disabled={submitting} arrow>

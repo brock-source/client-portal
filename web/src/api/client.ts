@@ -127,10 +127,18 @@ export interface Policy {
 export const api = {
   me: () => request<Me>("/auth/me"),
   login: (email: string, password: string) =>
-    request<Me>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+    request<{ id: string; email: string; role?: Role; twoFactorRequired?: boolean; userId?: string; message?: string }>(
+      "/auth/login",
+      { method: "POST", body: JSON.stringify({ email, password }) }
+    ),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
-  setPassword: (token: string, password: string) =>
-    request<{ ok: true }>("/auth/set-password", { method: "POST", body: JSON.stringify({ token, password }) }),
+  setPassword: (token: string, password: string, phoneNumber?: string) =>
+    request<{ ok: true; twoFactorEnabled?: boolean }>("/auth/set-password", {
+      method: "POST",
+      body: JSON.stringify({ token, password, phoneNumber }),
+    }),
+  verifyOtp: (userId: string, code: string) =>
+    request<Me>("/auth/verify-otp", { method: "POST", body: JSON.stringify({ userId, code }) }),
 
   admin: {
     listClients: () =>

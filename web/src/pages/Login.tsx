@@ -17,9 +17,15 @@ export default function Login() {
     setError(null);
     setSubmitting(true);
     try {
-      const me = await api.login(email, password);
+      const response = await api.login(email, password);
+
+      if (response.twoFactorRequired) {
+        navigate(`/verify-otp?userId=${response.userId}`);
+        return;
+      }
+
       await refresh();
-      navigate(me.role === "ADMIN" ? "/admin/clients" : "/dashboard");
+      navigate(response.role === "ADMIN" ? "/admin/clients" : "/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

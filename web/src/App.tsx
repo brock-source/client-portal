@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth";
 import Login from "./pages/Login";
 import SetPassword from "./pages/SetPassword";
+import VerifyOTP from "./pages/VerifyOTP";
 import Dashboard from "./pages/Dashboard";
 import ClientJourney from "./pages/ClientJourney";
 import AdminClients from "./pages/AdminClients";
@@ -40,6 +41,7 @@ export default function App() {
       <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<Login />} />
       <Route path="/set-password" element={<SetPassword />} />
+      <Route path="/verify-otp" element={<VerifyOTP />} />
       <Route
         path="/dashboard"
         element={
